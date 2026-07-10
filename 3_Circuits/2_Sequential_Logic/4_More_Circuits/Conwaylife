@@ -1,0 +1,37 @@
+module top_module(
+    input clk,
+    input load,
+    input [255:0] data,
+    output reg [255:0] q
+);
+    wire [255:0] next_q;
+	reg [3:0] neighbors;
+    
+    integer r, c;
+    integer rm, rp, cm, cp;
+    always@(*) begin
+        for (r = 0; r < 16; r = r + 1) begin 
+            for (c = 0; c < 16; c = c + 1) begin
+                rm = (r + 15) % 16; // row-1
+                rp = (r + 1)  % 16; // row+1
+                cm = (c + 15) % 16; // col-1
+                cp = (c + 1)  % 16; // col+1
+
+                
+                neighbors = q[rm*16+cm] + q[rm*16+c] + q[rm*16+cp]
+                			+ q[r *16+cm] + q[r *16+cp] + q[rp*16+cm] 
+                			+ q[rp*16+c] + q[rp*16+cp];
+
+                next_q[r*16+c] = (neighbors == 3) ||
+                                        (neighbors == 2 && q[r*16+c]);
+            end
+        end
+    end
+
+    always @(posedge clk) begin
+        if (load)
+            q <= data;
+        else
+            q <= next_q;
+    end
+endmodule
